@@ -31,34 +31,57 @@ class WeightedGraph {
         head = null;
     }
 
-    // TODO 1: Lengkapi method addVertex
     public void addVertex(String nama) {
-        // Buat node baru
-        // Jika head null → jadikan head
-        // Jika tidak → tambahkan di akhir linked list
+        VertexNode newNode = new VertexNode(nama);
+        if (head == null) {
+            head = newNode;
+        } else {
+            VertexNode current = head;
+            while (current.next != null) {
+                current = current.next;
+            }
+            current.next = newNode;
+        }
     }
 
-    // TODO 2: Lengkapi method findVertex
     private VertexNode findVertex(String nama) {
-        // Lakukan traversal linked list vertex
-        // Jika nama sama → return vertex
-        // Jika tidak ditemukan → return null
+        VertexNode current = head;
+        while (current != null) {
+            if (current.nama.equals(nama)) {
+                return current;
+            }
+            current = current.next;
+        }
         return null;
     }
 
-    // TODO 3: Lengkapi method addEdgeToList
     private void addEdgeToList(VertexNode vertex, String dest, int weight) {
-        // Tambahkan edge ke adjacency list
+        EdgeNode newNode = new EdgeNode(dest, weight);
+
+        if (vertex.edgeHead == null) {
+            vertex.edgeHead = newNode;
+        } else {
+            EdgeNode current = vertex.edgeHead;
+            while (current.next != null) {
+                current = current.next;
+            }
+            current.next = newNode;
+        }
     }
 
-    // TODO 4: Lengkapi addEdge (graph tidak berarah)
     public void addEdge(String src, String dest, int weight) {
-        // Cari src dan dest
-        // Jika salah satu null → tampilkan pesan
-        // Tambahkan edge dua arah
+        VertexNode srcNode = findVertex(src);
+        VertexNode destNode = findVertex(dest);
+
+        if (srcNode == null || destNode == null) {
+            System.out.println("Lokasi tidak ditemukan!");
+            return;
+        }
+
+        addEdgeToList(srcNode, dest, weight);
+        addEdgeToList(destNode, src, weight);
     }
 
-    // ================= DFS =================
     public void dfs(String start) {
         HashSet<String> visited = new HashSet<>();
         ArrayList<String> hasil = new ArrayList<>();
@@ -69,45 +92,116 @@ class WeightedGraph {
         System.out.println(String.join(" -> ", hasil));
     }
 
-    // TODO 5: Lengkapi DFS rekursif
     private void dfsRecursive(String lokasi, HashSet<String> visited, ArrayList<String> hasil) {
-        // Tandai visited
-        // Masukkan ke hasil
-        // Traversal semua edge
+        visited.add(lokasi);
+        hasil.add(lokasi);
+
+        VertexNode vertex = findVertex(lokasi);
+        EdgeNode edge = vertex.edgeHead;
+
+        while (edge != null) {
+            if (!visited.contains(edge.dest)) {
+                dfsRecursive(edge.dest, visited, hasil);
+            }
+            edge = edge.next;
+        }
     }
 
-    // ================= BFS =================
-    // TODO 6: Lengkapi BFS
     public void bfs(String start) {
-        // Gunakan Queue
-        // Gunakan visited
-        // Traversal graph secara BFS
+        HashSet<String> visited = new HashSet<>();
+        Queue<String> queue = new LinkedList<>();
+
+        visited.add(start);
+        queue.add(start);
+
+        System.out.print("BFS dari " + start + ": ");
+
+        while (!queue.isEmpty()) {
+            String lokasi = queue.poll();
+            System.out.print(lokasi + " ");
+
+            VertexNode vertex = findVertex(lokasi);
+            EdgeNode edge = vertex.edgeHead;
+
+            while (edge != null) {
+                if (!visited.contains(edge.dest)) {
+                    visited.add(edge.dest);
+                    queue.add(edge.dest);
+                }
+                edge = edge.next;
+            }
+        }
+        System.out.println();
     }
 
-    // ================= DIJKSTRA =================
     public void dijkstra(String start, String end) {
+
+        if (findVertex(start) == null || findVertex(end) == null) {
+            System.out.println("Lokasi tidak ditemukan!");
+            return;
+        }
+
         HashMap<String, Integer> distance = new HashMap<>();
         HashMap<String, String> previous = new HashMap<>();
         HashSet<String> visited = new HashSet<>();
 
-        // TODO 7: Inisialisasi distance semua vertex = infinity
-        // distance[start] = 0
+        VertexNode current = head;
+        while (current != null) {
+            distance.put(current.nama, Integer.MAX_VALUE);
+            current = current.next;
+        }
+        distance.put(start, 0);
 
-        // TODO 8: Proses utama Dijkstra
-        // Ambil vertex dengan jarak minimum
-        // Update jarak tetangga
+        while (true) {
+            String currentLoc = getMinDistanceVertex(distance, visited);
+            if (currentLoc == null || currentLoc.equals(end)) {
+                break;
+            }
+
+            visited.add(currentLoc);
+
+            VertexNode vertex = findVertex(currentLoc);
+            EdgeNode edge = vertex.edgeHead;
+
+            while (edge != null) {
+                if (!visited.contains(edge.dest)) {
+                    int newDist = distance.get(currentLoc) + edge.weight;
+                    if (newDist < distance.get(edge.dest)) {
+                        distance.put(edge.dest, newDist);
+                        previous.put(edge.dest, currentLoc);
+                    }
+                }
+                edge = edge.next;
+            }
+        }
+
+        printShortestPath(start, end, distance, previous);
     }
 
-    // TODO 9: Lengkapi getMinDistanceVertex
     private String getMinDistanceVertex(HashMap<String, Integer> distance,
                                         HashSet<String> visited) {
-        return null;
+
+        int min = Integer.MAX_VALUE;
+        String minVertex = null;
+
+        for (String lokasi : distance.keySet()) {
+            if (!visited.contains(lokasi) && distance.get(lokasi) < min) {
+                min = distance.get(lokasi);
+                minVertex = lokasi;
+            }
+        }
+        return minVertex;
     }
 
-    // ================= OUTPUT =================
     private void printShortestPath(String start, String end,
                                    HashMap<String, Integer> distance,
                                    HashMap<String, String> previous) {
+
+        if (distance.get(end) == Integer.MAX_VALUE) {
+            System.out.println("Tidak ada jalur dari " + start + " ke " + end);
+            return;
+        }
+
         System.out.println("\nJarak terpendek dari " + start + " ke " + end +
                 " = " + distance.get(end) + " meter");
 
@@ -130,7 +224,6 @@ public class GraphKampus {
 
         WeightedGraph kampus = new WeightedGraph();
 
-        // ===== NODE LOKASI =====
         kampus.addVertex("Asrama");
         kampus.addVertex("Masjid");
         kampus.addVertex("Parkiran Motor SBS");
@@ -144,16 +237,16 @@ public class GraphKampus {
         kampus.addVertex("Lapangan Hybrid");
         kampus.addVertex("SWK");
 
-        // ===== EDGE =====
         kampus.addEdge("Asrama", "Masjid", 95);
         kampus.addEdge("Asrama", "Parkiran Motor SBS", 50);
         kampus.addEdge("Masjid", "Lapangan Tenis", 30);
         kampus.addEdge("Parkiran Motor Utama", "Gedung Utama", 15);
         kampus.addEdge("Gedung Utama", "SWK", 100);
 
-        // ===== TEST =====
         kampus.dfs("Asrama");
         kampus.bfs("Asrama");
         kampus.dijkstra("Asrama", "SWK");
     }
 }
+
+//update
