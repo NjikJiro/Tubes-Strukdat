@@ -214,6 +214,7 @@ public class GraphKampus {
     public static void main(String[] args) {
 
         WeightedGraph kampus = new WeightedGraph();
+        Scanner sc = new Scanner(System.in);
 
         // ===== NODE LOKASI =====
         kampus.addVertex("Asrama");
@@ -229,7 +230,7 @@ public class GraphKampus {
         kampus.addVertex("Lapangan Hybrid");
         kampus.addVertex("SWK");
 
-        // ===== EDGE & JARAK (meter) =====
+        // ===== EDGE & JARAK =====
         kampus.addEdge("Asrama", "Masjid", 95);
         kampus.addEdge("Asrama", "Parkiran Motor SBS", 50);
         kampus.addEdge("Masjid", "Parkiran Motor SBS", 50);
@@ -262,9 +263,47 @@ public class GraphKampus {
         kampus.addEdge("Lapangan Hybrid", "SWK", 135);
         kampus.addEdge("Parkiran Mobil", "SWK", 30);
 
-        // ===== TEST =====
-        kampus.dfs("Asrama");
-        kampus.bfs("Asrama");
-        kampus.dijkstra("Asrama", "SWK");
+        boolean isRunning = true;
+
+        while (isRunning) {
+            System.out.println("\n=== MENU GRAPH KAMPUS ===");
+            System.out.println("1. DFS");
+            System.out.println("2. BFS");
+            System.out.println("3. Dijkstra");
+            System.out.println("4. Keluar");
+            System.out.print("Pilih menu: ");
+            int pilihan = sc.nextInt();
+            sc.nextLine(); // buang newline
+
+            switch (pilihan) {
+                case 1:
+                    System.out.print("Masukkan lokasi awal DFS: ");
+                    String dfsStart = sc.nextLine();
+                    kampus.dfs(dfsStart);
+                    break;
+
+                case 2:
+                    System.out.print("Masukkan lokasi awal BFS: ");
+                    String bfsStart = sc.nextLine();
+                    kampus.bfs(bfsStart);
+                    break;
+
+                case 3:
+                    System.out.print("Masukkan lokasi awal: ");
+                    String start = sc.nextLine();
+                    System.out.print("Masukkan lokasi tujuan: ");
+                    String end = sc.nextLine();
+                    kampus.dijkstra(start, end);
+                    break;
+
+                case 4:
+                    isRunning = false;
+                    System.out.println("Program selesai. Terima kasih.");
+                    break;
+
+                default:
+                    System.out.println("Pilihan tidak valid!");
+            }
+        }
     }
 }
